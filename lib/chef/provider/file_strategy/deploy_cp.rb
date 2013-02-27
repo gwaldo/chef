@@ -1,7 +1,6 @@
 #
-# Author:: Jesse Campbell (<hikeit@gmail.com>)
-# Author:: Adam Jacob (<adam@opscode.com>)
-# Copyright:: Copyright (c) 2008 Opscode, Inc.
+# Author:: Lamont Granquist (<lamont@opscode.com>)
+# Copyright:: Copyright (c) 2013 Opscode, Inc.
 # License:: Apache License, Version 2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,23 +16,25 @@
 # limitations under the License.
 #
 
-require 'chef/provider/file'
+#
+# PURPOSE: this strategy should be cross-platform and maintain SELinux contexts
+#          and windows ACL inheritance, but it uses cp and is both slower and is
+#          not atomic and may result in a corrupted destination file in low
+#          disk or power outage situations.
+#
 
 class Chef
   class Provider
-    class RemoteFile < Chef::Provider::File
+    class FileStrategy
+      class DeployCP
+        def create(file)
+          FileUtils.touch(file)
+        end
 
-      def initialize(new_resource, run_context)
-        @content_class = Chef::Provider::FileStrategy::ContentFromRemoteFile
-        super
+        def deploy(src, dst)
+          FileUtils.cp(src, dst)
+        end
       end
-
-      def load_current_resource
-        @current_resource = Chef::Resource::RemoteFile.new(@new_resource.name)
-        super
-      end
-
     end
   end
 end
-

@@ -344,5 +344,9 @@ class Chef
     # returns a platform specific path to the user home dir
     windows_home_path = ENV['SYSTEMDRIVE'] + ENV['HOMEPATH'] if ENV['SYSTEMDRIVE'] && ENV['HOMEPATH']
     user_home(ENV['HOME'] || windows_home_path || ENV['USERPROFILE'])
+
+    # selinux
+    selinux_restorecon_command "/sbin/restorecon -R"
+    selinux_enabled  ( `uname -s`.chomp == "Linux" && File.exists?( "/usr/sbin/selinuxenabled" ) && system( "/usr/sbin/selinuxenabled" ) )
   end
 end

@@ -1,7 +1,6 @@
 #
-# Author:: Jesse Campbell (<hikeit@gmail.com>)
-# Author:: Adam Jacob (<adam@opscode.com>)
-# Copyright:: Copyright (c) 2008 Opscode, Inc.
+# Author:: Lamont Granquist (<lamont@opscode.com>)
+# Copyright:: Copyright (c) 2013 Opscode, Inc.
 # License:: Apache License, Version 2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,23 +16,25 @@
 # limitations under the License.
 #
 
-require 'chef/provider/file'
+require 'chef/mixin/shell_out'
+require 'chef/provider/file_strategy/deploy_mv'
+
+#
+# PURPOSE: this strategy is for servers running selinux to deploy using mv (atomically),
+#          obey default umasks, and get selinux contexts restored.
+#
 
 class Chef
   class Provider
-    class RemoteFile < Chef::Provider::File
+    class FileStrategy
+      class DeployMvWithRestorecon < DeployMv
+        include Chef::Mixin::ShellOut
 
-      def initialize(new_resource, run_context)
-        @content_class = Chef::Provider::FileStrategy::ContentFromRemoteFile
-        super
+        def deploy(src, dst)
+          super
+          shell_out!( Chef::Config[:selinux_restorecon_comand] )
+        end
       end
-
-      def load_current_resource
-        @current_resource = Chef::Resource::RemoteFile.new(@new_resource.name)
-        super
-      end
-
     end
   end
 end
-
