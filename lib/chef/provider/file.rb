@@ -50,7 +50,7 @@ class Chef
       end
 
       def deployer
-        @deployer ||= Chef::Provider::File::Deploy::Mv.new
+        @deployer ||= Chef::Provider::File::Deploy::MvUnix.new
       end
 
       def content_strategy

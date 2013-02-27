@@ -26,7 +26,7 @@ class Chef
   class Provider
     class File
       class Deploy
-        class Mv
+        class MvWindows
           def create(file)
             FileUtils.touch(file)
           end
@@ -38,11 +38,10 @@ class Chef
               Chef::Log.debug("moving tempfile across different directories")
             end
 
-            # mv will copy perms of the src file, we want the dst file perms
-            # which either has the correct perms or was created with the correct perms
-            mode = ::File.stat(dst).mode & 0777
+            # FIXME: save all the windows perms off the dst
             FileUtils.mv(src, dst)
-            ::File.chmod(mode, dst)  # ruby makes this a no-op on windows
+            # FIXME: restore all the windows perms onto the dst
+
           end
         end
       end

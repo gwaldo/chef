@@ -17,7 +17,7 @@
 #
 
 require 'chef/mixin/shell_out'
-require 'chef/provider/file/deploy/mv'
+require 'chef/provider/file/deploy/mv_unix'
 
 #
 # PURPOSE: this strategy is for servers running selinux to deploy using mv (atomically),
@@ -28,7 +28,7 @@ class Chef
   class Provider
     class File
       class Deploy
-        class MvWithRestorecon < Mv
+        class MvWithRestorecon < MvUnix
           include Chef::Mixin::ShellOut
 
           def deploy(src, dst)
