@@ -1,4 +1,5 @@
 #
+# Author:: Jesse Campbell (<hikeit@gmail.com>)
 # Author:: Lamont Granquist (<lamont@opscode.com>)
 # Copyright:: Copyright (c) 2013 Opscode, Inc.
 # License:: Apache License, Version 2.0
