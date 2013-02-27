@@ -105,3 +105,14 @@ require 'chef/provider/remote_file/ftp'
 
 require "chef/provider/lwrp_base"
 require 'chef/provider/registry_key'
+
+require 'chef/provider/file/content_helper'
+require 'chef/provider/file/content'
+require 'chef/provider/file/content/file'
+require 'chef/provider/file/content/remote_file'
+require 'chef/provider/file/content/cookbook_file'
+require 'chef/provider/file/content/template'
+require 'chef/provider/file/deploy/mv'
+require 'chef/provider/file/deploy/cp'
+require 'chef/provider/file/deploy/mv_with_restorecon'
+

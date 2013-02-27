@@ -16,37 +16,39 @@
 # limitations under the License.
 #
 
-require 'chef/provider/file_strategy/abstract_file_thing'
+require 'chef/provider/file/content'
 
 class Chef
   class Provider
-    class FileStrategy
-      class ContentFromCookbookFile < AbstractFileThing
+    class File
+      class Content
+        class CookbookFile < Chef::Provider::File::Content
 
-        private
+          private
 
-        def file_for_provider
-          cookbook = run_context.cookbook_collection[resource_cookbook]
-          file_cache_location = cookbook.preferred_filename_on_disk_location(run_context.node, :files, @new_resource.source, @new_resource.path)
-          if file_cache_location.nil?
-            nil
-          else
-            tempfile = Tempfile.open(tempfile_basename, ::File.dirname(@new_resource.path))
-            tempfile.close
-            Chef::Log.debug("#{@new_resource} staging #{file_cache_location} to #{tempfile.path}")
-            FileUtils.cp(file_cache_location, tempfile.path)
-            tempfile
+          def file_for_provider
+            cookbook = run_context.cookbook_collection[resource_cookbook]
+            file_cache_location = cookbook.preferred_filename_on_disk_location(run_context.node, :files, @new_resource.source, @new_resource.path)
+            if file_cache_location.nil?
+              nil
+            else
+              tempfile = Tempfile.open(tempfile_basename, ::File.dirname(@new_resource.path))
+              tempfile.close
+              Chef::Log.debug("#{@new_resource} staging #{file_cache_location} to #{tempfile.path}")
+              FileUtils.cp(file_cache_location, tempfile.path)
+              tempfile
+            end
           end
-        end
 
-        def tempfile_basename
-          basename = ::File.basename(@new_resource.name)
-          basename.insert 0, "." unless Chef::Platform.windows?  # dotfile if we're not on windows
-          basename
-        end
+          def tempfile_basename
+            basename = ::File.basename(@new_resource.name)
+            basename.insert 0, "." unless Chef::Platform.windows?  # dotfile if we're not on windows
+            basename
+          end
 
-        def resource_cookbook
-          @new_resource.cookbook || @new_resource.cookbook_name
+          def resource_cookbook
+            @new_resource.cookbook || @new_resource.cookbook_name
+          end
         end
       end
     end

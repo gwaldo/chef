@@ -22,8 +22,8 @@ require 'chef/mixin/diffable_file_resource'
 
 class Chef
   class Provider
-    class FileStrategy
-      class ContentStrategy
+    class File
+      class ContentHelper
         include Chef::Mixin::Checksum
         include Chef::Mixin::DiffableFileResource
         include Chef::Mixin::BackupableFileResource

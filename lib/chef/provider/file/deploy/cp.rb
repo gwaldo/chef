@@ -25,14 +25,16 @@
 
 class Chef
   class Provider
-    class FileStrategy
-      class DeployCP
-        def create(file)
-          FileUtils.touch(file)
-        end
+    class File
+      class Deploy
+        class CP
+          def create(file)
+            FileUtils.touch(file)
+          end
 
-        def deploy(src, dst)
-          FileUtils.cp(src, dst)
+          def deploy(src, dst)
+            FileUtils.cp(src, dst)
+          end
         end
       end
     end

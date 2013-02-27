@@ -26,8 +26,6 @@ require 'fileutils'
 require 'chef/scan_access_control'
 require 'chef/mixin/checksum'
 require 'chef/mixin/backupable_file_resource'
-require 'chef/provider/file_strategy/content_strategy'
-require 'chef/provider/file_strategies'
 
 class Chef
   class Provider
@@ -39,7 +37,7 @@ class Chef
       attr_accessor :content_strategy
 
       def initialize(new_resource, run_context)
-        @content_class ||= Chef::Provider::FileStrategy::ContentFromResource
+        @content_class ||= Chef::Provider::File::Content::File
         super
       end
 
@@ -52,11 +50,11 @@ class Chef
       end
 
       def deployer
-        @deployer ||= Chef::Provider::FileStrategy::DeployMv.new
+        @deployer ||= Chef::Provider::File::Deploy::Mv.new
       end
 
       def content_strategy
-        @content_strategy ||= Chef::Provider::FileStrategy::ContentStrategy.new(self, content_object,  deployer, new_resource, current_resource, run_context)
+        @content_strategy ||= Chef::Provider::File::ContentHelper.new(self, content_object,  deployer, new_resource, current_resource, run_context)
       end
 
       def load_current_resource

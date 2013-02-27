@@ -24,24 +24,26 @@
 
 class Chef
   class Provider
-    class FileStrategy
-      class DeployMv
-        def create(file)
-          FileUtils.touch(file)
-        end
-
-        def deploy(src, dst)
-          if ::File.dirname(src) != ::File.dirname(dst)
-            # internal warning - in a Windows/SElinux/ACLs world its better to write
-            # a tempfile to your destination directory and then rename it
-            Chef::Log.debug("moving tempfile across different directories")
+    class File
+      class Deploy
+        class Mv
+          def create(file)
+            FileUtils.touch(file)
           end
 
-          # mv will copy perms of the src file, we want the dst file perms
-          # which either has the correct perms or was created with the correct perms
-          mode = ::File.stat(dst).mode & 0777
-          FileUtils.mv(src, dst)
-          ::File.chmod(mode, dst)  # ruby makes this a no-op on windows
+          def deploy(src, dst)
+            if ::File.dirname(src) != ::File.dirname(dst)
+              # internal warning - in a Windows/SElinux/ACLs world its better to write
+              # a tempfile to your destination directory and then rename it
+              Chef::Log.debug("moving tempfile across different directories")
+            end
+
+            # mv will copy perms of the src file, we want the dst file perms
+            # which either has the correct perms or was created with the correct perms
+            mode = ::File.stat(dst).mode & 0777
+            FileUtils.mv(src, dst)
+            ::File.chmod(mode, dst)  # ruby makes this a no-op on windows
+          end
         end
       end
     end

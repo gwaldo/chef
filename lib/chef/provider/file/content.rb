@@ -18,8 +18,8 @@
 
 class Chef
   class Provider
-    class FileStrategy
-      class AbstractFileThing
+    class File
+      class Content
 
         def initialize(new_resource, current_resource, run_context)
           @new_resource = new_resource
@@ -45,6 +45,11 @@ class Chef
 
         private
 
+        #
+        # Return something that looks like a File or Tempfile and
+        # you must assume the provider will unlink this file.  Copy
+        # the contents to a Tempfile if you need to.
+        #
         def file_for_provider
           raise "class must implement file_for_provider!"
         end

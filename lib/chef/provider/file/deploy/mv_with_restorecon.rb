@@ -17,7 +17,7 @@
 #
 
 require 'chef/mixin/shell_out'
-require 'chef/provider/file_strategy/deploy_mv'
+require 'chef/provider/file/deploy/mv'
 
 #
 # PURPOSE: this strategy is for servers running selinux to deploy using mv (atomically),
@@ -26,13 +26,15 @@ require 'chef/provider/file_strategy/deploy_mv'
 
 class Chef
   class Provider
-    class FileStrategy
-      class DeployMvWithRestorecon < DeployMv
-        include Chef::Mixin::ShellOut
+    class File
+      class Deploy
+        class MvWithRestorecon < Mv
+          include Chef::Mixin::ShellOut
 
-        def deploy(src, dst)
-          super
-          shell_out!( Chef::Config[:selinux_restorecon_comand] )
+          def deploy(src, dst)
+            super
+            shell_out!( Chef::Config[:selinux_restorecon_comand] )
+          end
         end
       end
     end

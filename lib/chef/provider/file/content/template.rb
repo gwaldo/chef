@@ -17,38 +17,42 @@
 #
 
 require 'chef/mixin/template'
-require 'chef/provider/file_strategy/abstract_file_thing'
+require 'chef/provider/file/content'
 
 class Chef
   class Provider
-    class FileStrategy
-      class ContentFromTemplate < AbstractFileThing
-        include Chef::Mixin::Template
+    class File
+      class Content
+        class Template < Chef::Provider::File::Content
 
-        def template_location
-          @template_file_cache_location ||= begin
-            template_finder.find(@new_resource.source, :local => @new_resource.local, :cookbook => @new_resource.cookbook)
+          include Chef::Mixin::Template
+
+          def template_location
+            @template_file_cache_location ||= begin
+              template_finder.find(@new_resource.source, :local => @new_resource.local, :cookbook => @new_resource.cookbook)
+            end
           end
-        end
 
-        private
+          private
 
-        def file_for_provider
-          context = {}
-          context.merge!(@new_resource.variables)
-          context[:node] = @run_context.node
-          context[:template_finder] = template_finder
-          file = nil
-          render_template(IO.read(template_location), context) { |t| file = t }
-          file
-        end
+          def file_for_provider
+            context = {}
+            context.merge!(@new_resource.variables)
+            context[:node] = @run_context.node
+            context[:template_finder] = template_finder
+            file = nil
+            render_template(IO.read(template_location), context) { |t| file = t }
+            file
+          end
 
-        def template_finder
-          @template_finder ||= begin
-            TemplateFinder.new(run_context, @new_resource.cookbook_name, @run_context.node)
+          def template_finder
+            @template_finder ||= begin
+              TemplateFinder.new(run_context, @new_resource.cookbook_name, @run_context.node)
+            end
           end
         end
       end
     end
   end
 end
+

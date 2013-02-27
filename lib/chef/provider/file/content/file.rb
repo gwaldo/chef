@@ -16,29 +16,31 @@
 # limitations under the License.
 #
 
-require 'chef/provider/file_strategy/abstract_file_thing'
+require 'chef/provider/file/content'
 
 class Chef
   class Provider
-    class FileStrategy
-      class ContentFromResource < AbstractFileThing
-        def file_for_provider
-          if @new_resource.content
-            tempfile = Tempfile.open(tempfile_basename, ::File.dirname(@new_resource.path))
-            tempfile.write(@new_resource.content)
-            tempfile.close
-            tempfile
-          else
-            nil
+    class File
+      class Content
+        class File < Chef::Provider::File::Content
+          def file_for_provider
+            if @new_resource.content
+              tempfile = Tempfile.open(tempfile_basename, ::File.dirname(@new_resource.path))
+              tempfile.write(@new_resource.content)
+              tempfile.close
+              tempfile
+            else
+              nil
+            end
           end
-        end
 
-        private
+          private
 
-        def tempfile_basename
-          basename = ::File.basename(@new_resource.name)
-          basename.insert 0, "." unless Chef::Platform.windows?  # dotfile if we're not on windows
-          basename
+          def tempfile_basename
+            basename = ::File.basename(@new_resource.name)
+            basename.insert 0, "." unless Chef::Platform.windows?  # dotfile if we're not on windows
+            basename
+          end
         end
       end
     end
