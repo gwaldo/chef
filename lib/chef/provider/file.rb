@@ -34,10 +34,9 @@ class Chef
       include Chef::Mixin::Checksum
       include Chef::Mixin::BackupableFileResource
 
-      attr_accessor :content_strategy
-
       def initialize(new_resource, run_context)
         @content_class ||= Chef::Provider::File::Content::File
+        @deployment_strategy = new_resource.deployment_strategy.new() if new_resource.respond_to?(:deployment_strategy)
         super
       end
 
@@ -46,15 +45,12 @@ class Chef
       end
 
       def content_object
+        # object created lazily after current resource is loaded
         @content_object ||= @content_class.new(@new_resource, @current_resource, @run_context)
       end
 
-      def deployer
-        @deployer ||= Chef::Provider::File::Deploy::MvUnix.new
-      end
-
-      def content_strategy
-        @content_strategy ||= Chef::Provider::File::ContentHelper.new(self, content_object,  deployer, new_resource, current_resource, run_context)
+      def content_helper
+        @content_helper ||= Chef::Provider::File::ContentHelper.new(self, content_object, @deployment_strategy, @new_resource, @current_resource, @run_context)
       end
 
       def load_current_resource
@@ -116,8 +112,8 @@ class Chef
       end
 
       def action_create
-        content_strategy.do_create_file
-        content_strategy.do_contents_changes
+        content_helper.do_create_file
+        content_helper.do_contents_changes
         do_acl_changes
         load_resource_attributes_from_file(@new_resource)
       end
