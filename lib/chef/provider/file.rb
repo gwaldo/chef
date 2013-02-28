@@ -56,9 +56,9 @@ class Chef
         true
       end
 
-      def content_object
+      def content
         # object created lazily after current resource is loaded
-        @content_object ||= @content_class.new(@new_resource, @current_resource, @run_context)
+        @content ||= @content_class.new(@new_resource, @current_resource, @run_context)
       end
 
       def load_current_resource
@@ -168,12 +168,8 @@ class Chef
       end
 
       def tempfile
-        content_object.tempfile
+        content.tempfile
       end
-
-#      def checksum
-#        Chef::Digester.checksum_for_file(tempfile.path)
-#      end
 
       def whyrun_mode?
         Chef::Config[:why_run]
