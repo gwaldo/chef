@@ -33,7 +33,9 @@ class Chef
 
           def deploy(src, dst)
             super
-            shell_out!( Chef::Config[:selinux_restorecon_comand] )
+            cmd = "#{Chef::Config[:selinux_restorecon_comand]} #{dst}"
+            Chef::Log.debug("fixing selinux perms with: #{cmd}")
+            shell_out!(cmd)
           end
         end
       end
