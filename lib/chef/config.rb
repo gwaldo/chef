@@ -349,5 +349,8 @@ class Chef
     selinux_restorecon_command "/sbin/restorecon -R"
     # guess if you're running selinux or not -- override this if it guesses wrong
     selinux_enabled  system( "/usr/sbin/selinuxenabled" )
+
+    # set this to something like Chef::Provider::File::Deploy::CpUnix if you want to override behavior globally
+    file_deployment_strategy nil
   end
 end

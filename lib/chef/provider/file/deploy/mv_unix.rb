@@ -26,14 +26,15 @@ class Chef
       class Deploy
         class MvUnix
           def create(file)
+            Chef::Log.debug("touching #{file} to create it")
             FileUtils.touch(file)
           end
 
           def deploy(src, dst)
             if ::File.dirname(src) != ::File.dirname(dst)
-              # internal warning - in a Windows/SElinux/ACLs world its better to write
+              # internal warning for now - in a Windows/SElinux/ACLs world its better to write
               # a tempfile to your destination directory and then rename it
-              Chef::Log.debug("moving tempfile across different directories -- this may break permissions")
+              Chef::Log.debug("WARNING: moving tempfile across different directories -- this may break permissions")
             end
 
             # we are only responsible for content so restore the dst files perms
@@ -46,6 +47,13 @@ class Chef
             ::File.chmod(mode, dst)
             ::File.chown(uid, gid, dst)
             Chef::Log.debug("restored mode = #{mode.to_s(8)}, uid = #{uid}, gid = #{gid} to #{dst}")
+
+            # handle selinux if we need to run restorecon
+            if Chef::Config[:selinux_enabled]
+              cmd = "#{Chef::Config[:selinux_restorecon_comand]} #{dst}"
+              Chef::Log.debug("fixing selinux perms with: #{cmd}")
+              shell_out!(cmd)
+            end
           end
         end
       end

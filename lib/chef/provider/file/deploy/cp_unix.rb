@@ -27,13 +27,23 @@ class Chef
   class Provider
     class File
       class Deploy
-        class CP
+        class CpUnix
           def create(file)
+            Chef::Log.debug("touching #{file} to create it")
             FileUtils.touch(file)
           end
 
           def deploy(src, dst)
+            # we are only responsible for content so restore the dst files perms
+            mode = ::File.stat(dst).mode & 07777
+            uid  = ::File.stat(dst).uid
+            gid  = ::File.stat(dst).gid
+            Chef::Log.debug("saved mode = #{mode.to_s(8)}, uid = #{uid}, gid = #{gid} from #{dst}")
+            Chef::Log.debug("copying temporary file #{src} into place at #{dst}")
             FileUtils.cp(src, dst)
+            ::File.chmod(mode, dst)
+            ::File.chown(uid, gid, dst)
+            Chef::Log.debug("restored mode = #{mode.to_s(8)}, uid = #{uid}, gid = #{gid} to #{dst}")
           end
         end
       end

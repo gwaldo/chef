@@ -28,14 +28,15 @@ class Chef
       class Deploy
         class MvWindows
           def create(file)
+            Chef::Log.debug("touching #{file} to create it")
             FileUtils.touch(file)
           end
 
           def deploy(src, dst)
             if ::File.dirname(src) != ::File.dirname(dst)
-              # internal warning - in a Windows/SElinux/ACLs world its better to write
+              # internal warning for now - in a Windows/SElinux/ACLs world its better to write
               # a tempfile to your destination directory and then rename it
-              Chef::Log.debug("moving tempfile across different directories")
+              Chef::Log.debug("WARNING: moving tempfile across different directories -- this may break permissions")
             end
 
             # FIXME: save all the windows perms off the dst

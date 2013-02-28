@@ -46,13 +46,12 @@ class Chef
         @action = "create"
         @allowed_actions.push(:create, :delete, :touch, :create_if_missing)
         @provider = Chef::Provider::File
-        @deployment_strategy = if Chef::Platform.windows?
-                                 Chef::Provider::File::Deploy::MvWindows
-                               elsif Chef::Config[:selinux_enabled]
-                                 Chef::Provider::File::Deploy::MvWithRestorecon
-                               else
-                                 Chef::Provider::File::Deploy::MvUnix
-                               end
+        @deployment_strategy = Chef::Config[:file_deployment_strategy]
+        @deployment_strategy ||= if Chef::Platform.windows?
+                                   Chef::Provider::File::Deploy::MvWindows
+                                 else
+                                   Chef::Provider::File::Deploy::MvUnix
+                                 end
 
         @diff = nil
       end
