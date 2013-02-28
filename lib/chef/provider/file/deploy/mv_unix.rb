@@ -17,9 +17,7 @@
 #
 
 #
-# PURPOSE: this strategy is atomic and preserves default umasks, but on windows you must
-#          not be copying from the temp directory, and will not correctly restore
-#          SELinux contexts.
+# PURPOSE: this strategy is atomic and preserves modes, but will not restore SELinux contexts
 #
 
 class Chef
