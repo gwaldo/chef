@@ -348,6 +348,6 @@ class Chef
     # selinux command to restore file contexts
     selinux_restorecon_command "/sbin/restorecon -R"
     # guess if you're running selinux or not -- override this if it guesses wrong
-    selinux_enabled  ( `uname -s`.chomp == "Linux" && File.exists?( "/usr/sbin/selinuxenabled" ) && system( "/usr/sbin/selinuxenabled" ) )
+    selinux_enabled  system( "/usr/sbin/selinuxenabled" )
   end
 end
