@@ -345,8 +345,9 @@ class Chef
     windows_home_path = ENV['SYSTEMDRIVE'] + ENV['HOMEPATH'] if ENV['SYSTEMDRIVE'] && ENV['HOMEPATH']
     user_home(ENV['HOME'] || windows_home_path || ENV['USERPROFILE'])
 
-    # selinux
+    # selinux command to restore file contexts
     selinux_restorecon_command "/sbin/restorecon -R"
+    # guess if you're running selinux or not -- override this if it guesses wrong
     selinux_enabled  ( `uname -s`.chomp == "Linux" && File.exists?( "/usr/sbin/selinuxenabled" ) && system( "/usr/sbin/selinuxenabled" ) )
   end
 end
