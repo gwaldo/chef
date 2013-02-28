@@ -30,10 +30,10 @@ class Chef
 
         attr_accessor :run_context
 
-        def initialize(provider, content_object, file_deployer, new_resource, current_resource, run_context)
+        def initialize(provider, content_object, deployment_strategy, new_resource, current_resource, run_context)
           @provider = provider
           @content_object = content_object
-          @file_deployer = file_deployer
+          @deployment_strategy = deployment_strategy
           @new_resource = new_resource
           @current_resource = current_resource
           @run_context = run_context
@@ -43,35 +43,37 @@ class Chef
           unless ::File.exists?(@new_resource.path)
             description = "create new file #{@new_resource.path}"
             @provider.converge_by(description) do
-              @file_deployer.create(@new_resource.path)
-              #FileUtils.touch(@new_resource.path)
+              @deployment_strategy.create(@new_resource.path)
               Chef::Log.info("#{@new_resource} created file #{@new_resource.path}")
             end
           end
         end
 
-        def tempfile_to_destfile
-          if tempfile.path && ::File.exists?(tempfile.path)
-            backup @new_resource.path if ::File.exists?(@new_resource.path)
-            @file_deployer.deploy(tempfile.path, @new_resource.path)
-            #FileUtils.cp(tempfile.path, @new_resource.path)
-          end
-        end
-
         def do_contents_changes
+          # a nil tempfile is okay, means the resource has no content or no new content
+          return if tempfile.nil?
+          # but a tempfile that has no path or doesn't exist should not happen
+          if tempfile.path.nil? || !::File.exists?(tempfile.path)
+            raise "chef-client is confused, trying to deploy a file that has no path or does not exist..."
+          end
           if contents_changed?
             description = [ "update content in file #{@new_resource.path} from #{short_cksum(@current_resource.checksum)} to #{short_cksum(checksum)}" ]
             description << diff(tempfile.path)
             @provider.converge_by(description) do
-              tempfile_to_destfile
+              # XXX: since we now always create the file before deploying content, we will always backup a file here
+              backup @new_resource.path if ::File.exists?(@new_resource.path)
+              @deployment_strategy.deploy(tempfile.path, @new_resource.path)
               Chef::Log.info("#{@new_resource} updated file contents #{@new_resource.path}")
             end
           end
-          cleanup
+          # unlink necessary to clean up in why-run mode
+          tempfile.unlink
         end
 
+        private
+
         def contents_changed?
-          !checksum.nil? && checksum != @current_resource.checksum
+          checksum != @current_resource.checksum
         end
 
         def tempfile
@@ -79,14 +81,7 @@ class Chef
         end
 
         def checksum
-          return nil if tempfile.nil? || tempfile.path.nil?
           Chef::Digester.checksum_for_file(tempfile.path)
-        end
-
-        private
-
-        def cleanup
-          tempfile.unlink unless tempfile.nil?
         end
 
         def whyrun_mode?
