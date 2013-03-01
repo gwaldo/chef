@@ -27,21 +27,21 @@ class Chef
         diff(old_file, new_file)
       end
 
-      def to_s
-        @string ? @string : @diff
+      def to_a
+        @error ? [ @error ] : @diff
       end
 
       def for_reporting
         # WARNING: caller needs to ensure that new files aren't posted to resource reporting
-        @diff
+        @diff.join("\\n")
       end
 
       def diff(old_file, new_file)
         # these are internal errors that should never get raised
         raise "old file #{source} does not exist to diff against" unless File.exists?(old_file)
         raise "new file #{dest} does not exist to diff against" unless File.exists?(new_file)
-        @string = catch (:nodiff) do
-          @diff = do_diff(old_file, new_file)
+        @error = catch (:nodiff) do
+          do_diff(old_file, new_file)
         end
       end
 
@@ -77,11 +77,9 @@ class Chef
           if result.stdout.length > diff_output_threshold
             throw :nodiff, "(long diff of over #{diff_output_threshold} characters, diff output suppressed)"
           else
-            val = result.stdout.split("\n")
-            val.delete("\\ No newline at end of file")
-            val = val.join("\\n")
             # XXX: we return the diff here, everything else is an error of one form or another
-            return val
+            @diff = result.stdout.split("\n")
+            @diff.delete("\\ No newline at end of file")
           end
         elsif not result.stderr.empty?
           throw :nodiff, "Could not determine diff. Error: #{result.stderr}"

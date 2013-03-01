@@ -115,7 +115,7 @@ class Chef
           diff = Chef::Util::Diff.new(@current_resource.path, tempfile.path)
           @new_resource.diff( diff.for_reporting ) unless file_created?
           description = [ "update content in file #{@new_resource.path} from #{short_cksum(@current_resource.checksum)} to #{short_cksum(checksum(tempfile.path))}" ]
-          description << diff.to_s
+          description << diff.to_a
           converge_by(description) do
             backup @new_resource.path unless file_created?
             @deployment_strategy.deploy(tempfile.path, @new_resource.path)
