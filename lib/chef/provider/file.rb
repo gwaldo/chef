@@ -26,7 +26,7 @@ require 'fileutils'
 require 'chef/scan_access_control'
 require 'chef/mixin/checksum'
 require 'chef/mixin/backupable_file_resource'
-require 'chef/mixin/diffable_file_resource'
+require 'chef/util/diff'
 
 # The Tao of File Providers:
 #  - the content provider must always return a tempfile that we can delete/mv
@@ -44,7 +44,6 @@ class Chef
       include Chef::Mixin::EnforceOwnershipAndPermissions
       include Chef::Mixin::Checksum
       include Chef::Mixin::BackupableFileResource
-      include Chef::Mixin::DiffableFileResource
 
       def initialize(new_resource, run_context)
         @content_class ||= Chef::Provider::File::Content::File
@@ -89,13 +88,20 @@ class Chef
       end
 
       def do_create_file
+        @file_created = false
         unless ::File.exists?(@new_resource.path)
           description = "create new file #{@new_resource.path}"
           converge_by(description) do
             @deployment_strategy.create(@new_resource.path)
             Chef::Log.info("#{@new_resource} created file #{@new_resource.path}")
+            @file_created = true
           end
         end
+      end
+
+      # do_contents_changes needs to know if do_create_file created a file or not
+      def file_created?
+        @file_created == true
       end
 
       def do_contents_changes
@@ -106,11 +112,12 @@ class Chef
           raise "chef-client is confused, trying to deploy a file that has no path or does not exist..."
         end
         if contents_changed?
+          diff = Chef::Util::Diff.new(@current_resource.path, tempfile.path)
+          @new_resource.diff( diff.for_reporting ) unless file_created?
           description = [ "update content in file #{@new_resource.path} from #{short_cksum(@current_resource.checksum)} to #{short_cksum(checksum(tempfile.path))}" ]
-          description << diff(tempfile.path)
+          description << diff.to_s
           converge_by(description) do
-            # XXX: since we now always create the file before deploying content, we will always backup a file here
-            backup @new_resource.path if ::File.exists?(@new_resource.path)
+            backup @new_resource.path unless file_created?
             @deployment_strategy.deploy(tempfile.path, @new_resource.path)
             Chef::Log.info("#{@new_resource} updated file contents #{@new_resource.path}")
           end

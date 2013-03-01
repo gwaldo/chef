@@ -22,9 +22,9 @@ class Chef
     class Diff
       include Chef::Mixin::ShellOut
 
-      def initialize(source, dest)
+      def initialize(old_file, new_file)
         @suppress_resource_reporting = false
-        diff(source, dest)
+        diff(old_file, new_file)
       end
 
       def to_s
@@ -36,34 +36,34 @@ class Chef
         @diff
       end
 
-      def diff(source, dest)
+      def diff(old_file, new_file)
         # these are internal errors that should never get raised
-        raise "source file does #{source} not exist to diff against" unless File.exists?(source)
-        raise "dest file #{dest} does not exist to diff against" unless File.exists?(dest)
+        raise "old file #{source} does not exist to diff against" unless File.exists?(old_file)
+        raise "new file #{dest} does not exist to diff against" unless File.exists?(new_file)
         @string = catch (:nodiff) do
-          @diff = do_diff(source, dest)
+          @diff = do_diff(old_file, new_file)
         end
       end
 
       private
 
-      def do_diff(source, dest)
+      def do_diff(old_file, new_file)
         throw :nodiff, "(diff output suppressed by config)" if Chef::Config[:diff_disabled]
 
         diff_filesize_threshold = Chef::Config[:diff_filesize_threshold]
         diff_output_threshold = Chef::Config[:diff_output_threshold]
 
-        if ::File.size(target_path) > diff_filesize_threshold || ::File.size(path) > diff_filesize_threshold
+        if ::File.size(old_file) > diff_filesize_threshold || ::File.size(new_file) > diff_filesize_threshold
           throw :nodiff, "(file sizes exceed #{diff_filesize_threshold} bytes, diff output suppressed)"
         end
 
         # MacOSX(BSD?) diff will *sometimes* happily spit out nasty binary diffs
-        throw :nodiff, "(current file is binary, diff output suppressed)" if is_binary?(target_path)
-        throw :nodiff, "(new content is binary, diff output suppressed)" if is_binary?(path)
+        throw :nodiff, "(current file is binary, diff output suppressed)" if is_binary?(old_file)
+        throw :nodiff, "(new content is binary, diff output suppressed)" if is_binary?(new_file)
 
         begin
           # -u: Unified diff format
-          result = shell_out("diff -u #{target_path} #{path}" )
+          result = shell_out("diff -u #{old_file} #{new_file}" )
         rescue Exception => e
           # Should *not* receive this, but in some circumstances it seems that
           # an exception can be thrown even using shell_out instead of shell_out!
