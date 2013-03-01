@@ -32,18 +32,12 @@ class Chef
             if file_cache_location.nil?
               nil
             else
-              tempfile = Tempfile.open(tempfile_basename, ::File.dirname(@new_resource.path))
+              tempfile = Tempfile.open(tempfile_basename, tempfile_dirname)
               tempfile.close
               Chef::Log.debug("#{@new_resource} staging #{file_cache_location} to #{tempfile.path}")
               FileUtils.cp(file_cache_location, tempfile.path)
               tempfile
             end
-          end
-
-          def tempfile_basename
-            basename = ::File.basename(@new_resource.name)
-            basename.insert 0, "." unless Chef::Platform.windows?  # dotfile if we're not on windows
-            basename
           end
 
           def resource_cookbook

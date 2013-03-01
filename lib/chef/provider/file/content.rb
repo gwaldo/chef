@@ -54,6 +54,21 @@ class Chef
           raise "class must implement file_for_provider!"
         end
 
+        #
+        # These are important for windows to get permissions right, and may
+        # be useful for SELinux and other ACL approaches.  Please use them
+        # as the arguments to Tempfile.new() consistently.
+        #
+        def tempfile_basename
+          basename = ::File.basename(@new_resource.name)
+          basename.insert 0, "." unless Chef::Platform.windows?  # dotfile if we're not on windows
+          basename
+        end
+
+        def tempfile_dirname
+          Chef::Config[:file_deployment_uses_destdir] ? ::File.dirname(@new_resource.path) : nil
+        end
+
       end
     end
   end

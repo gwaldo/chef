@@ -352,5 +352,11 @@ class Chef
 
     # set this to something like Chef::Provider::File::Deploy::CpUnix if you want to override behavior globally
     file_deployment_strategy nil
+
+    # do we create /tmp or %TEMP% files, or do we create temp files in the destination directory of the file?
+    #  - on windows this avoids issues with permission inheritance with the %TEMP% directory (do not set this to false)
+    #  - on unix this creates temp files like /etc/.sudoers.X-Y-Z and may create noise and make for itchy neckbeards
+    #  - with selinux and other ACLs approaches it may still be useful or to avoid copying across filesystems
+    file_deployment_uses_destdir ( RUBY_PLATFORM =~ /mswin|mingw|windows/ )
   end
 end
