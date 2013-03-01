@@ -33,6 +33,7 @@ class Chef
 
       def for_reporting
         # WARNING: caller needs to ensure that new files aren't posted to resource reporting
+        return nil if @diff.nil?
         @diff.join("\\n")
       end
 
